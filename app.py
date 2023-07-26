@@ -2,7 +2,7 @@ import datetime
 import json
 
 import jwt
-from jwt import ExpiredSignatureError, InvalidAlgorithmError
+from jwt import ExpiredSignatureError, InvalidAlgorithmError, InvalidSignatureError
 from streaming_form_data import StreamingFormDataParser
 from streaming_form_data.targets import ValueTarget
 import base64
@@ -57,8 +57,13 @@ def handler(event, context):
         }
     except InvalidAlgorithmError as e:
         return {
-            'statusCode': 403,
+            'statusCode': 500,
             'body': json.dumps("El token ingresado no corresponde al cifrado HS384")
+        }
+    except InvalidSignatureError as e:
+        return {
+            'statusCode': 403,
+            'body': json.dumps("El token ingresado no es valido")
         }
     except Exception as e:
         return {
