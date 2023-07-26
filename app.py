@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import jwt
 from streaming_form_data import StreamingFormDataParser
@@ -33,22 +34,31 @@ def handler(event, context):
         print("Email encontrado:", email_data)
         print("URL encontrada:", url_data)
 
-        secret_key = ENVS.JWT_SECRET
+        return {
+            'statusCode': 200,
+            'body': json.dumps({
+                'message': 'Correcto',
+                'code': 200,
+            }),
+            'headers': {
+                'Content-Type': 'application/json'
+            }
+        }
 
-        try:
-            # Verificamos el token utilizando la clave secreta
-            decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
+        # secret_key = ENVS.JWT_SECRET
+        # # Verificamos el token utilizando la clave secreta
+        # decoded_token = jwt.decode(token, secret_key, algorithms=["HS256"])
+        #
+        # exp_timestamp = decoded_token.get('exp', 0)
+        # current_timestamp = datetime.datetime.utcnow().timestamp()
+        #
+        # if exp_timestamp < current_timestamp:
+        #     return 504  # Token expirado (504 Gateway Timeout)
+        # return 200  # Token válido (200 OK)
 
-            exp_timestamp = decoded_token.get('exp', 0)
-            current_timestamp = datetime.datetime.utcnow().timestamp()
-
-            if exp_timestamp < current_timestamp:
-                return 504  # Token expirado (504 Gateway Timeout)
-            return 200  # Token válido (200 OK)
-
-        except jwt.ExpiredSignatureError:
-            return 504  # Token expirado (504 Gateway Timeout)
-        except jwt.InvalidTokenError:
-            return 401  # Token no válido (401 Unauthorized)
     except Exception as e:
         print(e)
+    except jwt.ExpiredSignatureError:
+        return 504  # Token expirado (504 Gateway Timeout)
+    except jwt.InvalidTokenError:
+        return 401  # Token no válido (401 Unauthorized)
